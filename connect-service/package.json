@@ -5,10 +5,10 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
-    "start": "node index.mjs",
-    "build": "node --check index.mjs",
+    "start": "node src/index.mjs",
+    "build": "node --check src/index.mjs",
     "test": "node --test tests/*.test.mjs",
-    "connector:post-deploy": "node index.mjs install",
-    "connector:pre-undeploy": "node index.mjs uninstall"
+    "connector:post-deploy": "node src/index.mjs install",
+    "connector:pre-undeploy": "node src/index.mjs uninstall"
   }
 }

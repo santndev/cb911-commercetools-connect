@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
@@ -8,7 +9,7 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
       || !/^\/api\/commercetools\/deployment\/[a-f0-9]{32}$/.test(target.pathname)) {
     throw new Error('Invalid Chargebacks911 deployment endpoint');
   }
-  for (const key of ['CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
+  for (const key of ['CB911_DEPLOYMENT_SECRET', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
     if (!env[key]?.trim()) throw new Error(`Missing ${key}`);
   }
   const body = JSON.stringify({ action, api_url: env.CTP_API_URL, project_key: env.CTP_PROJECT_KEY,
@@ -17,7 +18,8 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
     let response;
     try {
       response = await send(target.href, { method: 'POST', redirect: 'error',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json',
+          'X-CB911-Deployment-Signature': createHmac('sha256', env.CB911_DEPLOYMENT_SECRET).update(body).digest('hex') }, body,
         signal: AbortSignal.timeout(60000) });
     } catch {
       if (attempt === 2) throw new Error('Chargebacks911 lifecycle request failed');

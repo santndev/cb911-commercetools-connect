@@ -10,6 +10,9 @@ deployAs:
         - key: CB911_DEPLOYMENT_URL
           description: HTTPS deployment endpoint supplied by Chargebacks911 for this project
           required: true
+        - key: CB911_DEPLOYMENT_SECRET
+          description: Deployment signing secret supplied by Chargebacks911 for this connector app
+          required: true
   - name: merchant-center
     applicationType: merchant-center-custom-application
     configuration:
