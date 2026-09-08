@@ -1,0 +1,38 @@
+deployAs:
+  - name: connect-service
+    applicationType: service
+    endpoint: /service
+    scripts:
+      postDeploy: npm run connector:post-deploy
+      preUndeploy: npm run connector:pre-undeploy
+    configuration:
+      standardConfiguration:
+        - key: CB911_DEPLOYMENT_URL
+          description: HTTPS deployment endpoint supplied by Chargebacks911 for this project
+          required: true
+  - name: merchant-center
+    applicationType: merchant-center-custom-application
+    configuration:
+      standardConfiguration:
+        - key: CUSTOM_APPLICATION_ID
+          description: Application ID configured in Merchant Center
+          required: true
+        - key: ENTRY_POINT_URI_PATH
+          description: Entry point configured in Merchant Center
+          default: chargebacks911
+          required: true
+        - key: CLOUD_IDENTIFIER
+          description: Merchant Center region identifier
+          required: true
+        - key: CB911_SESSION_URL
+          description: HTTPS session endpoint supplied by Chargebacks911 for this app
+          required: true
+        - key: CB911_CONNECT_PACKAGE
+          description: Packaged Chargebacks911 branding
+          default: '1'
+inheritAs:
+  apiClient:
+    scopes:
+      - view_project_settings
+      - view_orders
+      - view_payments

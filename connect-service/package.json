@@ -1,0 +1,14 @@
+{
+  "name": "chargebacks911-connect-lifecycle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node index.mjs",
+    "build": "node --check index.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "connector:post-deploy": "node index.mjs install",
+    "connector:pre-undeploy": "node index.mjs uninstall"
+  }
+}

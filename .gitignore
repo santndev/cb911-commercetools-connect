@@ -1,0 +1,6 @@
+/connect-service/node_modules/
+/connect-service/.env
+/merchant-center/node_modules/
+/merchant-center/public/
+/merchant-center/build/
+/merchant-center/.env
