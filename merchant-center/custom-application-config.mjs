@@ -1,3 +1,5 @@
+const applicationUrl = process.env.APPLICATION_URL || process.env.MC_APPLICATION_URL;
+
 export default {
   name: 'Chargebacks911',
   entryPointUriPath: process.env.ENTRY_POINT_URI_PATH || 'chargebacks911',
@@ -6,7 +8,7 @@ export default {
     development: { initialProjectKey: process.env.MC_PROJECT_KEY || '' },
     production: {
       applicationId: process.env.CUSTOM_APPLICATION_ID || process.env.MC_APPLICATION_ID,
-      url: process.env.APPLICATION_URL || process.env.MC_APPLICATION_URL,
+      url: applicationUrl ? (/^https?:\/\//.test(applicationUrl) ? applicationUrl : `https://${applicationUrl}`) : undefined,
     },
   },
   additionalEnv: { connectorSessionUrl: process.env.CB911_SESSION_URL },
