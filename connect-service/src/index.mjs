@@ -4,12 +4,12 @@ import { pathToFileURL } from 'node:url';
 
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
   if (!['install', 'uninstall'].includes(action)) throw new Error('Invalid lifecycle operation');
-  const target = new URL(env.CB911_DEPLOYMENT_URL);
+  const target = new URL(env.CB911_LIFECYCLE_URL);
   if (target.protocol !== 'https:' || target.username || target.password || target.search || target.hash
-      || !/^\/api\/commercetools\/deployment\/[a-f0-9]{32}$/.test(target.pathname)) {
-    throw new Error('Invalid Chargebacks911 deployment endpoint');
+      || !/^\/api\/platforms\/commercetools\/installations\/[a-f0-9]{32}\/lifecycle$/.test(target.pathname)) {
+    throw new Error('Invalid Chargebacks911 lifecycle endpoint');
   }
-  for (const key of ['CB911_DEPLOYMENT_SECRET', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
+  for (const key of ['CB911_LIFECYCLE_URL', 'CB911_DEPLOYMENT_SECRET', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
     if (!env[key]?.trim()) throw new Error(`Missing ${key}`);
   }
   const body = JSON.stringify({ action, api_url: env.CTP_API_URL, project_key: env.CTP_PROJECT_KEY,

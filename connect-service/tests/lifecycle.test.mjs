@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { lifecycle } from '../src/index.mjs';
 
-const env = { CB911_DEPLOYMENT_URL: 'https://saas.example.com/api/commercetools/deployment/' + 'a'.repeat(32),
+const env = { CB911_LIFECYCLE_URL: 'https://saas.example.com/api/platforms/commercetools/installations/' + 'a'.repeat(32) + '/lifecycle',
   CB911_DEPLOYMENT_SECRET: 'deployment-secret', CTP_API_URL: 'https://api.us-east-2.aws.commercetools.com', CTP_PROJECT_KEY: 'test-project',
   CTP_CLIENT_ID: 'client', CTP_CLIENT_SECRET: 'secret' };
 
 test('sends generated credentials to the lifecycle endpoint and disables redirects', async () => {
   for (const action of ['install', 'uninstall']) {
     await lifecycle(action, env, async (url, request) => {
-      assert.equal(url, env.CB911_DEPLOYMENT_URL);
+      assert.equal(url, env.CB911_LIFECYCLE_URL);
       assert.equal(request.redirect, 'error');
       assert.deepEqual(JSON.parse(request.body), { action, api_url: env.CTP_API_URL,
         project_key: env.CTP_PROJECT_KEY, client_id: 'client', client_secret: 'secret' });
@@ -29,8 +29,8 @@ test('retries transient failures but never retries rejected authorization', asyn
   assert.equal(calls, 1);
 });
 test('rejects unsafe targets before sending credentials', async () => {
-  for (const target of ['http://saas.example.com', env.CB911_DEPLOYMENT_URL + '?redirect=1']) {
-    await assert.rejects(lifecycle('install', { ...env, CB911_DEPLOYMENT_URL: target },
+  for (const target of ['http://saas.example.com', env.CB911_LIFECYCLE_URL + '?redirect=1']) {
+    await assert.rejects(lifecycle('install', { ...env, CB911_LIFECYCLE_URL: target },
       () => assert.fail('No network request expected')), /Invalid/);
   }
 });

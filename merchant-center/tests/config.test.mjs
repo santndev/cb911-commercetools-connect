@@ -5,7 +5,7 @@ test('Connect deployment uses provider URL and IDs without exposing generated AP
   Object.assign(process.env, {
     CUSTOM_APPLICATION_ID: 'connect-app-id', APPLICATION_URL: 'https://shell.example.com',
     ENTRY_POINT_URI_PATH: 'chargebacks911', CLOUD_IDENTIFIER: 'aws-us',
-    CB911_CONNECT_PACKAGE: '1', CB911_SESSION_URL: 'https://saas.example.com/api/commercetools/session/app',
+    CB911_CONNECT_PACKAGE: '1', CB911_SESSION_URL: 'https://saas.example.com/api/platforms/commercetools/installations/app/session',
     CTP_CLIENT_SECRET: 'must-not-be-in-browser', MC_APPLICATION_URL: 'https://legacy.example.com',
   });
   const { default: config } = await import('../custom-application-config.mjs?connect');
