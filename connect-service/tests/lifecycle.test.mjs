@@ -20,6 +20,15 @@ test('sends generated credentials to the lifecycle endpoint and disables redirec
     });
   }
 });
+test('accepts the legacy deployment endpoint for existing Connect deployments', async () => {
+  const legacy = { ...env, CB911_DEPLOYMENT_URL: env.CB911_LIFECYCLE_URL };
+  delete legacy.CB911_LIFECYCLE_URL;
+
+  await lifecycle('install', legacy, async url => {
+    assert.equal(url, legacy.CB911_DEPLOYMENT_URL);
+    return { ok: true };
+  });
+});
 test('retries transient failures but never retries rejected authorization', async () => {
   let calls = 0;
   await lifecycle('install', env, async () => ({ ok: ++calls === 3, status: 503 }), async () => {});
