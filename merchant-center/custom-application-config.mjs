@@ -1,6 +1,6 @@
 const applicationUrl = process.env.APPLICATION_URL || process.env.MC_APPLICATION_URL;
 const sessionUrl = process.env.CB911_SESSION_URL || '';
-const saasOrigin = sessionUrl === '' ? '' : new URL(sessionUrl).origin;
+const saasOrigin = sessionUrl === '' ? '' : new URL(/^https?:\/\//.test(sessionUrl) ? sessionUrl : `https://${sessionUrl}`).origin;
 
 export default {
   name: 'Chargebacks911',
