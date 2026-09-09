@@ -8,28 +8,28 @@ deployAs:
     configuration:
       standardConfiguration:
         - key: CB911_LIFECYCLE_URL
-          description: Developer preview only: HTTPS lifecycle endpoint operated by Chargebacks911. Never request this from a customer.
+          description: 'Developer preview only: HTTPS lifecycle endpoint operated by Chargebacks911. Never request this from a customer.'
           required: true
       securedConfiguration:
         - key: CB911_DEPLOYMENT_SECRET
-          description: Developer preview only: CB911-managed deployment secret. Never disclose or request this from a customer.
+          description: 'Developer preview only: CB911-managed deployment secret. Never disclose or request this from a customer.'
           required: true
   - name: merchant-center
     applicationType: merchant-center-custom-application
     configuration:
       standardConfiguration:
         - key: CUSTOM_APPLICATION_ID
-          description: Organization Administrator prerequisite: Custom Application ID configured in this Merchant Center organization.
+          description: 'Organization Administrator prerequisite: Custom Application ID configured in this Merchant Center organization.'
           required: true
         - key: ENTRY_POINT_URI_PATH
-          description: Organization Administrator prerequisite: Custom Application entry point configured in Merchant Center.
+          description: 'Organization Administrator prerequisite: Custom Application entry point configured in Merchant Center.'
           default: chargebacks911
           required: true
         - key: CLOUD_IDENTIFIER
-          description: Merchant Center region identifier selected by the Organization Administrator.
+          description: 'Merchant Center region identifier selected by the Organization Administrator.'
           required: true
         - key: CB911_SESSION_URL
-          description: Developer preview only: HTTPS session endpoint operated by Chargebacks911. Never request this from a customer.
+          description: 'Developer preview only: HTTPS session endpoint operated by Chargebacks911. Never request this from a customer.'
           required: true
 inheritAs:
   apiClient:

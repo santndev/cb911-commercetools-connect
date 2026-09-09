@@ -1,5 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { load } from 'js-yaml';
+
+test('Connect manifest is valid YAML', () => {
+  assert.doesNotThrow(() => load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8')));
+});
 
 test('Connect deployment uses provider URL and IDs without exposing generated API credentials', async () => {
   Object.assign(process.env, {
