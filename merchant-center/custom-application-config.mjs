@@ -14,7 +14,7 @@ export default {
     },
   },
   additionalEnv: { connectorSessionUrl: process.env.CB911_SESSION_URL },
-  headers: saasOrigin === '' ? {} : { csp: { 'frame-src': [saasOrigin] } },
+  headers: saasOrigin === '' ? {} : { csp: { 'connect-src': [saasOrigin], 'frame-src': [saasOrigin] } },
   oAuthScopes: { view: ['view_orders', 'view_payments', 'view_project_settings'], manage: [] },
   icon: '${path:./express-resolve-logo-sidebar-mark.svg}',
   mainMenuLink: { defaultLabel: 'Chargebacks911', permissions: ['ViewChargebacks911'] },
