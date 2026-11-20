@@ -2,6 +2,12 @@
 
 This connector embeds Chargebacks911 Prevent in Merchant Center. Connect builds the service and Merchant Center application from the repository tag selected on the connector draft.
 
+## Prepare a Preview release from the browser
+
+1. In GitHub, open **Releases → Draft a new release**. Create a unique tag targeting the reviewed commit and publish the release. GitHub repository write access is required.
+2. In Merchant Center, open **Connect → Manage connectors → Organization connectors** and select the Preview draft. Edit its GitHub source, select the new tag, and save. Keep the supported projects limited to the intended QA projects.
+3. Select **Request preview**. After Merchant Center reports **Preview Accepted**, follow the installation steps below. This approval applies to the selected tag and enables QA deployment.
+
 ## Install in Preview
 
 1. An organization administrator makes the Custom Application available to the test project and records its application ID, entry point and cloud identifier.
@@ -15,6 +21,6 @@ Use **Connect → Manage connectors → Installations → Uninstall** for the se
 
 ## Access and tests
 
-Connect creates the project API client with read access to orders, payments and project settings. The Merchant Center session must identify the same project and have the application management permission. To run the service and configuration tests from the repository root, use:
+Connect creates the project API client with read access to orders, payments, project settings and Connect deployments. QA uses deployment read access to verify the API client belongs to a specific deployment. The Merchant Center session must identify the same project and have the application management permission. To run the service and configuration tests from the repository root, use:
 
     node --test connect-service/tests/lifecycle.test.mjs merchant-center/tests/config.test.mjs
