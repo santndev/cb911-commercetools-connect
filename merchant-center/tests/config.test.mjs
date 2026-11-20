@@ -18,6 +18,8 @@ test('Connect deployment uses provider URL and IDs without exposing generated AP
   assert.equal(config.env.production.url, 'https://shell.example.com');
   assert.equal(config.env.production.applicationId, 'connect-app-id');
   assert.equal(config.additionalEnv.connectorSessionUrl, process.env.CB911_SESSION_URL);
+  assert.deepEqual(config.headers.csp['frame-src'], ['https://saas.example.com']);
+  assert.deepEqual(config.headers.csp['connect-src'], ['https://saas.example.com']);
   assert.equal(config.icon, '${path:./express-resolve-logo-sidebar-mark.svg}');
   assert.ok(!JSON.stringify(config).includes(process.env.CTP_CLIENT_SECRET));
 });
