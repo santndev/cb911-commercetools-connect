@@ -1,6 +1,9 @@
 const applicationUrl = process.env.APPLICATION_URL || process.env.MC_APPLICATION_URL;
 const sessionUrl = process.env.CB911_SESSION_URL;
-const saasOrigins = sessionUrl ? [new URL(sessionUrl).origin] : [];
+// Connect validates the build before a deployment supplies its HTTPS session URL.
+const saasOrigins = sessionUrl?.startsWith('https://') && URL.canParse(sessionUrl)
+  ? [new URL(sessionUrl).origin]
+  : [];
 
 export default {
   name: 'Chargebacks911',

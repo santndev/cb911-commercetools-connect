@@ -23,3 +23,10 @@ test('Connect deployment uses provider URL and IDs without exposing generated AP
   assert.equal(config.icon, '${path:./express-resolve-logo-sidebar-mark.svg}');
   assert.ok(!JSON.stringify(config).includes(process.env.CTP_CLIENT_SECRET));
 });
+
+test('Connect validation builds before a deployment URL is configured', async () => {
+  process.env.CB911_SESSION_URL = 'CB911_SESSION_URL';
+  const { default: config } = await import('../custom-application-config.mjs?validation');
+  assert.deepEqual(config.headers.csp['frame-src'], []);
+  assert.deepEqual(config.headers.csp['connect-src'], []);
+});
