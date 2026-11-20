@@ -10,10 +10,6 @@ deployAs:
         - key: CB911_LIFECYCLE_URL
           description: 'Developer preview only: HTTPS lifecycle endpoint operated by Chargebacks911. Never request this from a customer.'
           required: true
-      securedConfiguration:
-        - key: CB911_DEPLOYMENT_SECRET
-          description: 'Developer preview only: CB911-managed deployment secret. Never disclose or request this from a customer.'
-          required: true
   - name: merchant-center
     applicationType: merchant-center-custom-application
     configuration:

@@ -11,7 +11,7 @@ This connector embeds Chargebacks911 Prevent in Merchant Center. Connect builds 
 ## Install in Preview
 
 1. An organization administrator makes the Custom Application available to the test project and records its application ID, entry point and cloud identifier.
-2. A Chargebacks911 administrator activates the matching SaaS app, assigns a test billing profile and downloads its Connect Preview configuration. The current Preview release requires the administrator to supply that configuration in Merchant Center. Keep the deployment secret in its secured field.
+2. A Chargebacks911 administrator activates the matching SaaS app, assigns a test billing profile, and associates the app reference with the expected Connect connector ID in SaaS configuration. Set the lifecycle and session URLs for that app in Merchant Center. Connect supplies the project credentials and service URL for both Preview and production.
 3. In Connect, open the accepted draft, select **Deploy on Preview**, confirm the project and install. When the status is **Installed**, set the Custom Application deployment preview URL to the new merchant-center host.
 4. Open Chargebacks911 from Merchant Center, verify the project details, select protection and complete the test checkout. Open **Pre-Chargebacks** to verify the report belongs to the project.
 
