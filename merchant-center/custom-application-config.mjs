@@ -1,6 +1,9 @@
 const applicationUrl = process.env.APPLICATION_URL || process.env.MC_APPLICATION_URL;
-const sessionUrl = process.env.CB911_SESSION_URL || '';
-const saasOrigin = process.env.CB911_EMBED_ORIGIN || 'https://concert-published-directories-scanner.trycloudflare.com';
+const sessionUrl = process.env.CB911_SESSION_URL;
+// Connect validates the build before a deployment supplies its HTTPS session URL.
+const saasOrigins = sessionUrl?.startsWith('https://') && URL.canParse(sessionUrl)
+  ? [new URL(sessionUrl).origin]
+  : [];
 
 export default {
   name: 'Chargebacks911',
@@ -13,8 +16,8 @@ export default {
       url: applicationUrl ? (/^https?:\/\//.test(applicationUrl) ? applicationUrl : `https://${applicationUrl}`) : undefined,
     },
   },
-  additionalEnv: { connectorSessionUrl: process.env.CB911_SESSION_URL },
-  headers: { csp: { 'connect-src': [saasOrigin], 'frame-src': [saasOrigin] } },
+  additionalEnv: { connectorSessionUrl: sessionUrl },
+  headers: { csp: { 'connect-src': saasOrigins, 'frame-src': saasOrigins } },
   oAuthScopes: { view: ['view_orders', 'view_payments', 'view_project_settings'], manage: [] },
   icon: '${path:./express-resolve-logo-sidebar-mark.svg}',
   mainMenuLink: { defaultLabel: 'Chargebacks911', permissions: ['ViewChargebacks911'] },
