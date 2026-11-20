@@ -37,3 +37,4 @@ inheritAs:
       - view_project_settings
       - view_orders
       - view_payments
+      - view_connectors_deployments
