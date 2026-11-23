@@ -5,11 +5,6 @@ deployAs:
     scripts:
       postDeploy: npm run connector:post-deploy
       preUndeploy: npm run connector:pre-undeploy
-    configuration:
-      standardConfiguration:
-        - key: CB911_LIFECYCLE_URL
-          description: 'Developer preview only: HTTPS lifecycle endpoint operated by Chargebacks911. Never request this from a customer.'
-          required: true
 inheritAs:
   apiClient:
     scopes:
