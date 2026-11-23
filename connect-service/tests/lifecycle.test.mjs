@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { once } from 'node:events';
+import { createServer } from 'node:http';
 import { lifecycle } from '../src/index.mjs';
 
 const env = { CB911_LIFECYCLE_URL: 'https://saas.example.com/api/platforms/commercetools/installations/' + 'a'.repeat(32) + '/lifecycle',
@@ -36,5 +38,34 @@ test('rejects unsafe targets before sending credentials', async () => {
   for (const target of ['http://saas.example.com', env.CB911_LIFECYCLE_URL + '?redirect=1']) {
     await assert.rejects(lifecycle('install', { ...env, CB911_LIFECYCLE_URL: target },
       () => assert.fail('No network request expected')), /Invalid/);
+  }
+});
+
+test('delivers install, uninstall and reinstall over HTTP, retrying a temporary failure', async () => {
+  const received = [];
+  const server = createServer(async (request, response) => {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    received.push({ method: request.method, path: request.url, body: JSON.parse(Buffer.concat(chunks).toString()) });
+    response.writeHead(received.length === 1 ? 503 : 200).end();
+  });
+  server.listen(0, '127.0.0.1');
+  try {
+    await once(server, 'listening');
+    const origin = `http://127.0.0.1:${server.address().port}`;
+    // Route the validated HTTPS destination to a self-contained HTTP fixture.
+    const send = (url, options) => fetch(new URL(new URL(url).pathname, origin), options);
+    await lifecycle('install', env, send, async () => {});
+    await lifecycle('uninstall', env, send);
+    await lifecycle('install', { ...env, CTP_CLIENT_ID: 'replacement' }, send);
+
+    assert.deepEqual(received.map(({ body }) => [body.action, body.client_id]), [
+      ['install', 'client'], ['install', 'client'], ['uninstall', 'client'], ['install', 'replacement'],
+    ]);
+    assert.ok(received.every(({ method, path, body }) => method === 'POST'
+      && path === new URL(env.CB911_LIFECYCLE_URL).pathname
+      && body.project_key === env.CTP_PROJECT_KEY && body.service_url === env.CONNECT_SERVICE_URL));
+  } finally {
+    await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
   }
 });
