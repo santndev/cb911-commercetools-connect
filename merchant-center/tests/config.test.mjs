@@ -3,8 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
 
-test('Connect manifest is valid YAML', () => {
-  assert.doesNotThrow(() => load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8')));
+test('Connect installs only the lifecycle service', () => {
+  const manifest = load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8'));
+  assert.deepEqual(manifest.deployAs.map(({ name, applicationType }) => [name, applicationType]), [
+    ['connect-service', 'service'],
+  ]);
+  assert.deepEqual(manifest.deployAs[0].configuration.standardConfiguration.map(({ key }) => key), [
+    'CB911_LIFECYCLE_URL',
+  ]);
 });
 
 test('Connect deployment uses provider URL and IDs without exposing generated API credentials', async () => {
