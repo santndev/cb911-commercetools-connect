@@ -36,3 +36,16 @@ test('Connect validation builds before a deployment URL is configured', async ()
   assert.deepEqual(config.headers.csp['frame-src'], []);
   assert.deepEqual(config.headers.csp['connect-src'], []);
 });
+
+test('patched build glob and development transport retain their required APIs', async () => {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const scriptsRequire = createRequire(require.resolve('@commercetools-frontend/mc-scripts/package.json'));
+  const { glob } = scriptsRequire('glob');
+  assert.ok((await glob('src/*.jsx', { cwd: new URL('../', import.meta.url) })).some(path => path.replaceAll('\\', '/') === 'src/index.jsx'));
+  const transportRequire = createRequire(scriptsRequire.resolve('webpack-dev-server'));
+  const sockjsRequire = createRequire(transportRequire.resolve('sockjs'));
+  const { v4 } = sockjsRequire('uuid');
+  assert.match(v4(), /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.equal(typeof transportRequire('sockjs').createServer().installHandlers, 'function');
+});
