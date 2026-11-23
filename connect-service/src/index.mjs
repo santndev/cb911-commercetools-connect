@@ -1,29 +1,25 @@
-import { createHmac } from 'node:crypto';
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
   if (!['install', 'uninstall'].includes(action)) throw new Error('Invalid lifecycle operation');
-  // Existing Connect deployments retain their original configuration keys on redeploy.
-  // Prefer the standardized key, but let those deployments complete their migration.
-  const lifecycleUrl = env.CB911_LIFECYCLE_URL || env.CB911_DEPLOYMENT_URL;
+  const lifecycleUrl = env.CB911_LIFECYCLE_URL;
   if (!lifecycleUrl?.trim()) throw new Error('Missing CB911_LIFECYCLE_URL');
   const target = new URL(lifecycleUrl);
   if (target.protocol !== 'https:' || target.username || target.password || target.search || target.hash
       || !/^\/api\/platforms\/commercetools\/installations\/[a-f0-9]{32}\/lifecycle$/.test(target.pathname)) {
     throw new Error('Invalid Chargebacks911 lifecycle endpoint');
   }
-  for (const key of ['CB911_DEPLOYMENT_SECRET', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
+  for (const key of ['CONNECT_SERVICE_URL', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
     if (!env[key]?.trim()) throw new Error(`Missing ${key}`);
   }
   const body = JSON.stringify({ action, api_url: env.CTP_API_URL, project_key: env.CTP_PROJECT_KEY,
-    client_id: env.CTP_CLIENT_ID, client_secret: env.CTP_CLIENT_SECRET });
+    client_id: env.CTP_CLIENT_ID, client_secret: env.CTP_CLIENT_SECRET, service_url: env.CONNECT_SERVICE_URL });
   for (let attempt = 0; attempt < 3; attempt++) {
     let response;
     try {
       response = await send(target.href, { method: 'POST', redirect: 'error',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json',
-          'X-CB911-Deployment-Signature': createHmac('sha256', env.CB911_DEPLOYMENT_SECRET).update(body).digest('hex') }, body,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body,
         signal: AbortSignal.timeout(60000) });
     } catch {
       if (attempt === 2) throw new Error('Chargebacks911 lifecycle request failed');

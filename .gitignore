@@ -4,3 +4,16 @@
 /merchant-center/public/
 /merchant-center/build/
 /merchant-center/.env
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+.DS_Store
+/.npmrc
+/merchant-center/.npmrc
+/connect-service/.npmrc

@@ -3,8 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
 
-test('Connect manifest is valid YAML', () => {
-  assert.doesNotThrow(() => load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8')));
+test('Connect installs only the lifecycle service', () => {
+  const manifest = load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8'));
+  assert.deepEqual(manifest.deployAs.map(({ name, applicationType }) => [name, applicationType]), [
+    ['connect-service', 'service'],
+  ]);
+  assert.deepEqual(manifest.deployAs[0].configuration.standardConfiguration.map(({ key }) => key), [
+    'CB911_LIFECYCLE_URL',
+  ]);
 });
 
 test('Connect deployment uses provider URL and IDs without exposing generated API credentials', async () => {
@@ -29,4 +35,17 @@ test('Connect validation builds before a deployment URL is configured', async ()
   const { default: config } = await import('../custom-application-config.mjs?validation');
   assert.deepEqual(config.headers.csp['frame-src'], []);
   assert.deepEqual(config.headers.csp['connect-src'], []);
+});
+
+test('patched build glob and development transport retain their required APIs', async () => {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const scriptsRequire = createRequire(require.resolve('@commercetools-frontend/mc-scripts/package.json'));
+  const { glob } = scriptsRequire('glob');
+  assert.ok((await glob('src/*.jsx', { cwd: new URL('../', import.meta.url) })).some(path => path.replaceAll('\\', '/') === 'src/index.jsx'));
+  const transportRequire = createRequire(scriptsRequire.resolve('webpack-dev-server'));
+  const sockjsRequire = createRequire(transportRequire.resolve('sockjs'));
+  const { v4 } = sockjsRequire('uuid');
+  assert.match(v4(), /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+  assert.equal(typeof transportRequire('sockjs').createServer().installHandlers, 'function');
 });
