@@ -8,9 +8,7 @@ test('Connect installs only the lifecycle service', () => {
   assert.deepEqual(manifest.deployAs.map(({ name, applicationType }) => [name, applicationType]), [
     ['connect-service', 'service'],
   ]);
-  assert.deepEqual(manifest.deployAs[0].configuration.standardConfiguration.map(({ key }) => key), [
-    'CB911_LIFECYCLE_URL',
-  ]);
+  assert.equal(manifest.deployAs[0].configuration, undefined);
 });
 
 test('Connect deployment uses provider URL and IDs without exposing generated API credentials', async () => {

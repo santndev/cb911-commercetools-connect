@@ -1,15 +1,10 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
+export const LIFECYCLE_URL = 'https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle';
+
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
   if (!['install', 'uninstall'].includes(action)) throw new Error('Invalid lifecycle operation');
-  const lifecycleUrl = env.CB911_LIFECYCLE_URL;
-  if (!lifecycleUrl?.trim()) throw new Error('Missing CB911_LIFECYCLE_URL');
-  const target = new URL(lifecycleUrl);
-  if (target.protocol !== 'https:' || target.username || target.password || target.search || target.hash
-      || !/^\/api\/platforms\/commercetools\/installations\/[a-f0-9]{32}\/lifecycle$/.test(target.pathname)) {
-    throw new Error('Invalid Chargebacks911 lifecycle endpoint');
-  }
   for (const key of ['CONNECT_SERVICE_URL', 'CTP_API_URL', 'CTP_PROJECT_KEY', 'CTP_CLIENT_ID', 'CTP_CLIENT_SECRET']) {
     if (!env[key]?.trim()) throw new Error(`Missing ${key}`);
   }
@@ -18,7 +13,7 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
   for (let attempt = 0; attempt < 3; attempt++) {
     let response;
     try {
-      response = await send(target.href, { method: 'POST', redirect: 'error',
+      response = await send(LIFECYCLE_URL, { method: 'POST', redirect: 'error',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body,
         signal: AbortSignal.timeout(60000) });
     } catch {

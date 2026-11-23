@@ -20,7 +20,7 @@ Create the app in Chargebacks911 Admin Console. In **Configure installation**, s
 
 1. In Admin Console, create a commercetools app, save its release authorization, repository, tag, region and project, then use **Create draft**. Request Preview and configure the new draft's installation URL. Assign and publish Payscout TEST billing, then activate the app.
 2. Open the app's Installation URL in a new tab. Register a new Custom Application in Merchant Center using the Application URL displayed by SaaS and an unused entry point. Add `view_project_settings` to the default View permission group. Enter the generated application ID, entry point, project and region once on the SaaS Connect page.
-3. In Connect, confirm the project and deploy the accepted Preview. The current Preview manifest requires the Chargebacks911 administrator to enter the app's lifecycle URL. This remains a public installation blocker. Connect supplies the project credentials and service URL.
+3. In Connect, confirm the project and deploy the accepted Preview. There are no callback URL or shared-secret fields. Connect supplies the project credentials and service URL. The service sends lifecycle callbacks to `https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle`; SaaS verifies the deployment with Connect and resolves the matching app from its Connector ID.
 4. Set the Custom Application to Ready and install it for the same project. The Application URL remains the SaaS URL supplied at registration.
 5. Open Chargebacks911 from Merchant Center, verify the project details, select protection and complete the test checkout. Open **Pre-Chargebacks** to verify the report belongs to the project.
 
@@ -38,7 +38,7 @@ To run the service and configuration tests from the repository root, use:
 
 ## Public installation status
 
-The current manifest is a Preview integration. Public source visibility does not certify or list the app. `CB911_LIFECYCLE_URL` still requires administrator configuration during deployment. Do not submit this manifest as a zero-configuration public installer until that requirement is resolved and the complete merchant installation has been verified.
+Public source visibility does not certify or list the app. Preview and production use the same fixed Chargebacks911 callback and deployment verification. Deploy the matching SaaS endpoint before releasing this service version. Verify the complete merchant installation before requesting marketplace certification. Custom Application registration remains a merchant organization prerequisite for the embedded interface.
 
 ## Security reports
 
