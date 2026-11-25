@@ -1,7 +1,43 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
-export const LIFECYCLE_URL = 'https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle';
+async function lifecycleUrl(env, send) {
+  const api = new URL(env.CTP_API_URL);
+  const region = api.hostname.match(/^api\.(us-central1\.gcp|us-east-2\.aws|europe-west1\.gcp|eu-central-1\.aws|australia-southeast1\.gcp)\.commercetools\.com$/)?.[1];
+  if (!region || api.protocol !== 'https:' || api.username || api.password || api.port || api.pathname !== '/' || api.search || api.hash) {
+    throw Object.assign(new Error('Invalid Connect API origin'), { status: 400 });
+  }
+  const request = async (url, options = {}) => {
+    const response = await send(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw Object.assign(new Error(`Connect discovery failed (${response.status})`), { status: response.status });
+    return response.json();
+  };
+  const token = await request(`https://auth.${region}.commercetools.com/oauth/token`, {
+    method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${env.CTP_CLIENT_ID}:${env.CTP_CLIENT_SECRET}`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'client_credentials', scope: `view_connectors_deployments:${env.CTP_PROJECT_KEY}` }),
+  });
+  if (typeof token.access_token !== 'string' || !token.access_token) throw new Error('Connect returned no access token');
+  const matches = [];
+  for (let offset = 0; offset < 1000; offset += 100) {
+    const page = await request(`https://connect.${region}.commercetools.com/${encodeURIComponent(env.CTP_PROJECT_KEY)}/deployments?limit=100&offset=${offset}`,
+      { headers: { Authorization: `Bearer ${token.access_token}`, Accept: 'application/json' } });
+    if (!Array.isArray(page.results)) throw new Error('Connect returned no deployments');
+    matches.push(...page.results.filter(deployment => deployment.apiClient?.id === env.CTP_CLIENT_ID
+      && deployment.applications?.some(app => app.applicationName === 'connect-service'
+        && (app.url === env.CONNECT_SERVICE_URL || (deployment.status === 'Deploying' && !app.url)))));
+    if (page.results.length < 100) break;
+    if (offset === 900) throw new Error('Connect deployment lookup exceeded its limit');
+  }
+  if (matches.length !== 1) throw new Error('Connect has not confirmed a unique deployment');
+  const entry = new URL(matches[0].connector?.documentationUrl);
+  if (entry.protocol !== 'https:' || entry.username || entry.password || entry.port || entry.hash
+    || entry.pathname !== '/connector' || entry.searchParams.get('platform') !== 'commercetools'
+    || !/^[a-f0-9]{32}$/.test(entry.searchParams.get('app') || '')) {
+    throw Object.assign(new Error('Connect app installation URL is invalid'), { status: 400 });
+  }
+  return new URL('/api/platforms/commercetools/lifecycle', entry.origin).href;
+}
 
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
   if (!['install', 'uninstall'].includes(action)) throw new Error('Invalid lifecycle operation');
@@ -13,10 +49,12 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
   for (let attempt = 0; attempt < 3; attempt++) {
     let response;
     try {
-      response = await send(LIFECYCLE_URL, { method: 'POST', redirect: 'error',
+      const url = await lifecycleUrl(env, send);
+      response = await send(url, { method: 'POST', redirect: 'error',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body,
         signal: AbortSignal.timeout(60000) });
-    } catch {
+    } catch (error) {
+      if (error.status && error.status !== 429 && error.status < 500) throw error;
       if (attempt === 2) throw new Error('Chargebacks911 lifecycle request failed');
     }
     if (response?.ok) return;
