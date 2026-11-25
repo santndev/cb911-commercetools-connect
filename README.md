@@ -19,14 +19,14 @@ Create the app in Chargebacks911 Admin Console. In **Configure installation**, s
 ## Install in Preview
 
 1. In Admin Console, create a commercetools app, save its release authorization, repository, tag, region and project, then use **Create draft**. Request Preview and configure the new draft's installation URL. Assign and publish Payscout TEST billing, then activate the app.
-2. Open the app's Installation URL in a new tab. Register a new Custom Application in Merchant Center using the Application URL displayed by SaaS and an unused entry point. Add `view_project_settings` to the default View permission group. Enter the generated application ID, entry point, project and region once on the SaaS Connect page.
+2. Open the app's Installation URL in a new tab. Register a Custom Application in Merchant Center using the Application URL displayed by SaaS and entry point `chargebacks911`. Add `view_project_settings` to the default View permission group and set the application to Ready. Copy its configuration page URL into the SaaS Connect page once; the application ID and organization are read from that URL. Project and region are verified when the application opens in Merchant Center.
 3. In Connect, confirm the project and deploy the accepted Preview. There are no callback URL or shared-secret fields. Connect supplies the project credentials and service URL. The service sends lifecycle callbacks to `https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle`; SaaS verifies the deployment with Connect and resolves the matching app from its Connector ID.
-4. Set the Custom Application to Ready and install it for the same project. The Application URL remains the SaaS URL supplied at registration.
+4. Return to the SaaS Connect page and use **Install app in Merchant Center**. Select the same project and save. Installing the connector alone does not add the menu item. The Application URL remains the SaaS URL supplied at registration.
 5. Open Chargebacks911 from Merchant Center, verify the project details, select protection and complete the test checkout. Open **Pre-Chargebacks** to verify the report belongs to the project.
 
 ## Removal and reinstall
 
-Use **Connect → Manage connectors → Installations → Uninstall** for the selected project. The service sends its uninstall callback before removal. Confirm the installation status and usage cutoff in Chargebacks911. Reinstall creates a new deployment. Reopen the SaaS-hosted application from Merchant Center.
+Use **Stop protection** in Chargebacks911 to stop protection and new fees while retaining previous usage. Alternatively, use **Connect → Manage connectors → Installations → Uninstall** for the selected project; the service sends its uninstall callback before removal. Neither action removes the Custom Application menu item: remove its project installation separately in **Manage organizations & teams → Custom Applications** if desired. Reinstall creates a new deployment. Reopen the SaaS-hosted application from Merchant Center and explicitly Activate to resume protection and billing.
 
 ## Access and tests
 
