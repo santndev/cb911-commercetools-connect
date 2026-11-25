@@ -15,7 +15,7 @@ async function lifecycleUrl(env, send) {
   const token = await request(`https://auth.${region}.commercetools.com/oauth/token`, {
     method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${env.CTP_CLIENT_ID}:${env.CTP_CLIENT_SECRET}`).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ grant_type: 'client_credentials', scope: `view_connectors_deployments:${env.CTP_PROJECT_KEY}` }),
+    body: new URLSearchParams({ grant_type: 'client_credentials', scope: ['view_connectors_deployments', 'view_connectors'].map(scope => `${scope}:${env.CTP_PROJECT_KEY}`).join(' ') }),
   });
   if (typeof token.access_token !== 'string' || !token.access_token) throw new Error('Connect returned no access token');
   const matches = [];
@@ -30,7 +30,15 @@ async function lifecycleUrl(env, send) {
     if (offset === 900) throw new Error('Connect deployment lookup exceeded its limit');
   }
   if (matches.length !== 1) throw new Error('Connect has not confirmed a unique deployment');
-  const entry = new URL(matches[0].connector?.documentationUrl);
+  const own = matches[0];
+  const connectorId = own.connector?.id;
+  if (typeof connectorId !== 'string' || !connectorId || !['preview', 'sandbox', 'production'].includes(own.type)) {
+    throw new Error('Connect deployment identity is incomplete');
+  }
+  const connector = await request(`https://connect.${region}.commercetools.com/connectors/${own.type === 'preview' ? 'drafts/' : ''}${encodeURIComponent(connectorId)}`,
+    { headers: { Authorization: `Bearer ${token.access_token}`, Accept: 'application/json' } });
+  if (connector.id !== connectorId) throw new Error('Connect returned a different app');
+  const entry = new URL(connector.documentationUrl);
   if (entry.protocol !== 'https:' || entry.username || entry.password || entry.port || entry.hash
     || entry.pathname !== '/connector' || entry.searchParams.get('platform') !== 'commercetools'
     || !/^[a-f0-9]{32}$/.test(entry.searchParams.get('app') || '')) {
@@ -55,7 +63,7 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
         signal: AbortSignal.timeout(60000) });
     } catch (error) {
       if (error.status && error.status !== 429 && error.status < 500) throw error;
-      if (attempt === 2) throw new Error('Chargebacks911 lifecycle request failed');
+      if (attempt === 2) throw new Error(`Chargebacks911 lifecycle request failed: ${error.message}`);
     }
     if (response?.ok) return;
     if (response && response.status !== 429 && response.status < 500) {
