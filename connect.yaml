@@ -2,6 +2,14 @@ deployAs:
   - name: connect-service
     applicationType: service
     endpoint: /service
+    configuration:
+      standardConfiguration:
+        - key: CUSTOM_APPLICATION_CONFIGURATION_URL
+          description: Custom Applications → your application → copy the configuration page URL from the address bar.
+          required: true
+        - key: ENTRY_POINT_URI_PATH
+          description: Copy the Application entry point URI path supplied with your Chargebacks911 Application URL.
+          required: true
     scripts:
       postDeploy: npm run connector:post-deploy
       preUndeploy: npm run connector:pre-undeploy
