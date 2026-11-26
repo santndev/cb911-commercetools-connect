@@ -43,6 +43,17 @@ test('requires the Connect service URL for either lifecycle operation', async ()
   }
 });
 
+test('delivers authenticated removal without querying a deleted deployment or revoked Connect grant', async () => {
+  let callbacks = 0;
+  await lifecycle('uninstall', env, async (url, request) => {
+    assert.equal(url, LIFECYCLE_URL);
+    assert.equal(JSON.parse(request.body).client_secret, env.CTP_CLIENT_SECRET);
+    callbacks++;
+    return { ok: true };
+  });
+  assert.equal(callbacks, 1);
+});
+
 test('delivers a cross-org Preview callback when the creator draft is not readable', async () => {
   let callbacks = 0;
   const send = withDeployment(async () => { callbacks++; return { ok: true }; });
@@ -101,7 +112,7 @@ test('delivers install, uninstall and reinstall over HTTP, retrying a temporary 
     await lifecycle('uninstall', env, send);
     await lifecycle('install', { ...env, CTP_CLIENT_ID: 'replacement' }, send);
 
-    assert.deepEqual(discovery, Array(4).fill(['token', 'deployment']).flat());
+    assert.deepEqual(discovery, Array(3).fill(['token', 'deployment']).flat());
     assert.deepEqual(received.map(({ body }) => [body.action, body.client_id]), [
       ['install', 'client'], ['install', 'client'], ['uninstall', 'client'], ['install', 'replacement'],
     ]);

@@ -50,7 +50,7 @@ export async function lifecycle(action, env = process.env, send = fetch, wait = 
   for (let attempt = 0; attempt < 3; attempt++) {
     let response;
     try {
-      const url = await lifecycleUrl(env, send);
+      const url = action === 'uninstall' ? LIFECYCLE_URL : await lifecycleUrl(env, send);
       response = await send(url, { method: 'POST', redirect: 'error',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body,
         signal: AbortSignal.timeout(60000) });
