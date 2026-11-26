@@ -26,7 +26,7 @@ Installations register the fixed Application URL `https://apps.chargebacks911.co
 4. After the lifecycle callback has configured the hosted app, verify the organization's contact email, set the Custom Application to Ready and install its menu for the same project. Open Chargebacks911 Prevent from that menu. The signed Merchant Center session verifies project, region and app permissions before onboarding.
 5. Verify the project details, select protection and complete the test checkout with explicit Activate. Open **Pre-Chargebacks** to verify the report belongs to the project.
 
-Admin Console writes the app's SaaS Installation URL to the Connect draft's `documentationUrl` when creating the draft or applying its repository tag. The service verifies its API client and service URL against its project deployment, then reads the matching app metadata with `view_connectors` and derives the callback from that SaaS origin. Deployment responses do not include the documentation URL. Preview reads the draft; sandbox and production read the published app. Apply the repository tag before requesting Preview or certification. A missing or invalid installation URL fails closed; deployment configuration cannot override the destination.
+The service verifies its API client and service URL against its project deployment, then sends the callback to the fixed Chargebacks911 endpoint in the reviewed source. SaaS independently verifies the grant and identifies the app from its deployment's Connector ID. No access to the creator organization's draft is needed. Local Preview preparation sets the same local SaaS origin in the callback and wizard guidance; those immutable tags cannot be submitted for listing. Merchant configuration cannot override the callback destination.
 
 ## Removal and reinstall
 
@@ -34,7 +34,7 @@ Use **Stop protection** in Chargebacks911 to stop protection and new fees while 
 
 ## Access and tests
 
-Connect creates the project API client with read access to orders, payments, project settings, Connect deployments and app metadata (`view_connectors`). The service and SaaS use deployment read access to verify the API client belongs to a specific deployment. The Merchant Center session must identify the same project and have the application management permission. Use Node.js `^22.23.4`, `^24.22.1` or `>=26.12.1` for the application build. From `merchant-center`, run `npm ci`, `npm test` and `npm run build`. `npm run build:saas` copies the build into a sibling `marketplace` checkout; it does not deploy a production service.
+Connect creates the project API client with read access to orders, payments, project settings and Connect deployments. The service and SaaS use deployment read access to verify the API client belongs to a specific deployment. The Merchant Center session must identify the same project and have the application management permission. Use Node.js `^22.23.4`, `^24.22.1` or `>=26.12.1` for the application build. From `merchant-center`, run `npm ci`, `npm test` and `npm run build`. `npm run build:saas` copies the build into a sibling `marketplace` checkout; it does not deploy a production service.
 
 To run the service and configuration tests from the repository root, use:
 

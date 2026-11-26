@@ -20,4 +20,3 @@ inheritAs:
       - view_orders
       - view_payments
       - view_connectors_deployments
-      - view_connectors
