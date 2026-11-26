@@ -3,6 +3,48 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
 import { runInNewContext } from 'node:vm';
+import { createRequire } from 'node:module';
+
+test('workspace recovery distinguishes missing setup, denied access and temporary failures', () => {
+  const require = createRequire(import.meta.url);
+  const React = require('react');
+  const { renderToStaticMarkup } = require('react-dom/server');
+  const { transformSync } = require('@babel/core');
+  const source = readFileSync(new URL('../src/index.jsx', import.meta.url), 'utf8');
+  const component = source.slice(source.indexOf('function WorkspaceError('), source.indexOf('function Workspace()'));
+  const compiled = transformSync(component, { configFile: false, babelrc: false,
+    plugins: [require.resolve('@babel/plugin-transform-react-jsx')] }).code;
+  let loadingFinished = 0;
+  const render = (props) => {
+    const ErrorView = runInNewContext(`${compiled}\nWorkspaceError`, {
+      React, useEffect: callback => callback(), Text: require('@commercetools-uikit/text').default,
+      PrimaryButton: require('@commercetools-uikit/primary-button').default,
+      window: { location: { pathname: '/merchant-project/merchant-app' }, onAppLoaded: () => { loadingFinished += 1; } },
+    });
+    return renderToStaticMarkup(React.createElement(ErrorView, { onRetry() {}, ...props }));
+  };
+  const missing = render({ status: 404, configuration: true });
+  assert.equal(loadingFinished, 1, 'A recovery screen must dismiss the host bootstrap loading layer');
+  assert.match(missing, /Check your app installation/);
+  assert.match(missing, /merchant-project/);
+  assert.match(missing, /merchant-app/);
+  assert.match(missing, /Application ID and entry point match/);
+  assert.match(missing, /Ready, install it for the same project/);
+  assert.match(missing, /href="\/account\/organizations"/);
+  assert.match(missing, /Try again/);
+  for (const status of [401, 403]) {
+    const denied = render({ status });
+    assert.match(denied, /Check your access/);
+    assert.match(denied, /application permissions/);
+    assert.doesNotMatch(denied, /Manage connectors|Open organization settings/);
+  }
+  for (const status of [undefined, 500, 503]) {
+    const unavailable = render({ status, configuration: true });
+    assert.match(unavailable, /temporarily unavailable/);
+    assert.match(unavailable, /Try again/);
+    assert.doesNotMatch(unavailable, /may not be installed|Open organization settings/);
+  }
+});
 
 test('fixed Marketplace hosting resolves SDK identity before startup without credentials', async () => {
   const source = readFileSync(new URL('../src/index.jsx', import.meta.url), 'utf8');
@@ -12,13 +54,13 @@ test('fixed Marketplace hosting resolves SDK identity before startup without cre
     location: { pathname: '/merchant-project/merchant-app/reports' } };
   let started = false;
   let requested;
-  const run = (ok = true) => runInNewContext(`(async () => {${bootstrap}\n startup(); })()`, {
+  const run = (ok = true, status = 503) => runInNewContext(`(async () => {${bootstrap}\n startup(); })()`, {
     window, URL, URLSearchParams, AbortSignal,
     fetch: async (url, options) => {
       requested = url;
       assert.equal(options.credentials, 'omit');
       assert.equal(options.redirect, 'error');
-      return { ok, json: async () => ({ data: { applicationId: 'merchant-id:merchant-app', entryPointUriPath: 'merchant-app' } }) };
+      return { ok, status, json: async () => ({ data: { applicationId: 'merchant-id:merchant-app', entryPointUriPath: 'merchant-app' } }) };
     },
     startup: () => { assert.equal(window.app.applicationId, 'merchant-id:merchant-app'); started = true; },
   });
@@ -26,7 +68,9 @@ test('fixed Marketplace hosting resolves SDK identity before startup without cre
   assert.equal(started, true);
   assert.deepEqual(Object.fromEntries(requested.searchParams), { project_key: 'merchant-project', entry_path: 'merchant-app', region: 'us-east-2.aws' });
   started = false;
-  await assert.rejects(run(false), /configuration is unavailable/);
+  for (const status of [404, 401, 403, 500, 503]) {
+    await assert.rejects(run(false, status), error => error.statusCode === status);
+  }
   assert.equal(started, false);
   delete window.app.connectorConfigurationUrl;
   await run(false);
