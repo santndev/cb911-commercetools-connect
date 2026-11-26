@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
-export const LIFECYCLE_URL = 'https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle';
+export const LIFECYCLE_URL = 'https://values-mortality-logistics-symbol.trycloudflare.com/api/platforms/commercetools/lifecycle';
 
 async function lifecycleUrl(env, send) {
   const api = new URL(env.CTP_API_URL);
