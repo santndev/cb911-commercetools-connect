@@ -5,10 +5,10 @@ deployAs:
     configuration:
       standardConfiguration:
         - key: CUSTOM_APPLICATION_CONFIGURATION_URL
-          description: Custom Applications → your application → copy the configuration page URL from the address bar.
+          description: Custom Applications → Configure Custom Applications → your application → Configuration → copy the browser URL.
           required: true
         - key: ENTRY_POINT_URI_PATH
-          description: Copy the Application entry point URI path supplied with your Chargebacks911 Application URL.
+          description: Custom Applications → Configure Custom Applications → your application → Application entry point URI path.
           required: true
     scripts:
       postDeploy: npm run connector:post-deploy

@@ -2,6 +2,36 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
+import { runInNewContext } from 'node:vm';
+
+test('fixed Marketplace hosting resolves SDK identity before startup without credentials', async () => {
+  const source = readFileSync(new URL('../src/index.jsx', import.meta.url), 'utf8');
+  const bootstrap = source.split('async function start() {')[1].split('  ({ ApplicationShell, setupGlobalErrorListener }')[0];
+  assert.ok(!source.includes("from '@commercetools-frontend/"));
+  const window = { app: { connectorConfigurationUrl: 'https://saas.example.com/configuration', mcApiUrl: 'https://mc-api.us-east-2.aws.commercetools.com' },
+    location: { pathname: '/merchant-project/merchant-app/reports' } };
+  let started = false;
+  let requested;
+  const run = (ok = true) => runInNewContext(`(async () => {${bootstrap}\n startup(); })()`, {
+    window, URL, URLSearchParams, AbortSignal,
+    fetch: async (url, options) => {
+      requested = url;
+      assert.equal(options.credentials, 'omit');
+      assert.equal(options.redirect, 'error');
+      return { ok, json: async () => ({ data: { applicationId: 'merchant-id:merchant-app', entryPointUriPath: 'merchant-app' } }) };
+    },
+    startup: () => { assert.equal(window.app.applicationId, 'merchant-id:merchant-app'); started = true; },
+  });
+  await run();
+  assert.equal(started, true);
+  assert.deepEqual(Object.fromEntries(requested.searchParams), { project_key: 'merchant-project', entry_path: 'merchant-app', region: 'us-east-2.aws' });
+  started = false;
+  await assert.rejects(run(false), /configuration is unavailable/);
+  assert.equal(started, false);
+  delete window.app.connectorConfigurationUrl;
+  await run(false);
+  assert.equal(started, true);
+});
 
 test('Connect installs only the lifecycle service', () => {
   const manifest = load(readFileSync(new URL('../../connect.yaml', import.meta.url), 'utf8'));
@@ -42,6 +72,13 @@ test('patched build glob and development transport retain their required APIs', 
   const { createRequire } = await import('node:module');
   const require = createRequire(import.meta.url);
   const scriptsRequire = createRequire(require.resolve('@commercetools-frontend/mc-scripts/package.json'));
+  const shellRequire = createRequire(require.resolve('@commercetools-frontend/application-shell/package.json'));
+  const permissionsRequire = createRequire(shellRequire.resolve('@commercetools-frontend/permissions/package.json'));
+  const componentsRequire = createRequire(shellRequire.resolve('@commercetools-frontend/application-components/package.json'));
+  assert.equal(permissionsRequire.resolve('@commercetools-frontend/application-shell-connectors'),
+    require.resolve('@commercetools-frontend/application-shell-connectors'));
+  assert.equal(componentsRequire.resolve('@commercetools-frontend/application-shell-connectors'),
+    require.resolve('@commercetools-frontend/application-shell-connectors'));
   const { glob } = scriptsRequire('glob');
   assert.ok((await glob('src/*.jsx', { cwd: new URL('../', import.meta.url) })).some(path => path.replaceAll('\\', '/') === 'src/index.jsx'));
   const transportRequire = createRequire(scriptsRequire.resolve('webpack-dev-server'));
