@@ -22,7 +22,7 @@ Marketplace-first installations register the fixed Application URL `https://apps
 
 1. In Admin Console, create a commercetools app, save its release authorization, repository, tag, region and project, then use **Create draft**. Request Preview and configure the new draft's installation URL. Assign and publish Payscout TEST billing, then activate the app.
 2. Open the app's SaaS Installation URL from Admin Console. In Merchant Center, select **your organization → Custom Applications → Configure Custom Applications → Add a Custom Application**. Copy the Application URL and unique entry point displayed by SaaS, add `view_project_settings` in the default View permission group and save as Draft.
-3. Select **Connect commercetools**. In the Marketplace installation configuration, paste the Custom Application configuration page URL and the supplied entry point. Install the service for the intended project. No Chargebacks911 callback URL or shared secret is requested.
+3. Select **Connect commercetools**. In the Marketplace installation configuration, paste the Custom Application ID and the supplied entry point. Install the service for the intended project. No Chargebacks911 callback URL or shared secret is requested.
 4. After the lifecycle callback has configured the hosted app, verify the organization's contact email, set the Custom Application to Ready and install its menu for the same project. Open Chargebacks911 Prevent from that menu. The signed Merchant Center session verifies project, region and app permissions before onboarding.
 5. Verify the project details, select protection and complete the test checkout with explicit Activate. Open **Pre-Chargebacks** to verify the report belongs to the project.
 
