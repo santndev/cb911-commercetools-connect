@@ -41,6 +41,9 @@ test('Connect installs only the lifecycle service', () => {
   assert.deepEqual(manifest.deployAs[0].configuration.standardConfiguration.map(({key, required}) => [key, required]), [
     ['CUSTOM_APPLICATION_CONFIGURATION_URL', true], ['ENTRY_POINT_URI_PATH', true],
   ]);
+  const applicationUrl = manifest.deployAs[0].configuration.standardConfiguration[0].description.match(/https:\/\/[^\s]+\/api\/platforms\/commercetools\/marketplace\b/)?.[0];
+  assert.ok(applicationUrl, 'The installation wizard must show a complete, copyable Application URL');
+  assert.equal(new URL(applicationUrl).search, '');
   assert.equal(manifest.deployAs[0].configuration.securedConfiguration, undefined);
 });
 

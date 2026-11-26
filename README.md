@@ -18,7 +18,7 @@ Create the app in Chargebacks911 Admin Console. In **Configure installation**, s
 
 ## Install in Preview
 
-Marketplace-first installations can register the fixed Application URL `<SaaS origin>/api/platforms/commercetools/installations/<app reference>/marketplace`. The app resolves its public SDK configuration from the deployment-confirmed project, region and entry point before loading the Merchant Center SDK. The SaaS Connect entry continues to supply its own setup URL; both entries use the same authenticated onboarding and billing workflow.
+Marketplace-first installations register the fixed Application URL `https://apps.chargebacks911.com/api/platforms/commercetools/marketplace`, displayed in the installation wizard. The app resolves its public SDK configuration from the uniquely matching deployment-confirmed project, region and entry point before loading the Merchant Center SDK. Local Preview tags display the local SaaS origin and cannot be submitted for listing. The SaaS Connect entry continues to supply its own setup URL; both entries use the same authenticated onboarding and billing workflow.
 
 1. In Admin Console, create a commercetools app, save its release authorization, repository, tag, region and project, then use **Create draft**. Request Preview and configure the new draft's installation URL. Assign and publish Payscout TEST billing, then activate the app.
 2. Open the app's SaaS Installation URL from Admin Console. In Merchant Center, select **your organization → Custom Applications → Configure Custom Applications → Add a Custom Application**. Copy the Application URL and unique entry point displayed by SaaS, add `view_project_settings` in the default View permission group and save as Draft.
