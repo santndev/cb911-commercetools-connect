@@ -1,6 +1,8 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 
+export const LIFECYCLE_URL = 'https://apps.chargebacks911.com/api/platforms/commercetools/lifecycle';
+
 async function lifecycleUrl(env, send) {
   const api = new URL(env.CTP_API_URL);
   const region = api.hostname.match(/^api\.(us-central1\.gcp|us-east-2\.aws|europe-west1\.gcp|eu-central-1\.aws|australia-southeast1\.gcp)\.commercetools\.com$/)?.[1];
@@ -15,7 +17,7 @@ async function lifecycleUrl(env, send) {
   const token = await request(`https://auth.${region}.commercetools.com/oauth/token`, {
     method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${env.CTP_CLIENT_ID}:${env.CTP_CLIENT_SECRET}`).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ grant_type: 'client_credentials', scope: ['view_connectors_deployments', 'view_connectors'].map(scope => `${scope}:${env.CTP_PROJECT_KEY}`).join(' ') }),
+    body: new URLSearchParams({ grant_type: 'client_credentials', scope: `view_connectors_deployments:${env.CTP_PROJECT_KEY}` }),
   });
   if (typeof token.access_token !== 'string' || !token.access_token) throw new Error('Connect returned no access token');
   const matches = [];
@@ -35,16 +37,7 @@ async function lifecycleUrl(env, send) {
   if (typeof connectorId !== 'string' || !connectorId || !['preview', 'sandbox', 'production'].includes(own.type)) {
     throw new Error('Connect deployment identity is incomplete');
   }
-  const connector = await request(`https://connect.${region}.commercetools.com/connectors/${own.type === 'preview' ? 'drafts/' : ''}${encodeURIComponent(connectorId)}`,
-    { headers: { Authorization: `Bearer ${token.access_token}`, Accept: 'application/json' } });
-  if (connector.id !== connectorId) throw new Error('Connect returned a different app');
-  const entry = new URL(connector.documentationUrl);
-  if (entry.protocol !== 'https:' || entry.username || entry.password || entry.port || entry.hash
-    || entry.pathname !== '/connector' || entry.searchParams.get('platform') !== 'commercetools'
-    || !/^[a-f0-9]{32}$/.test(entry.searchParams.get('app') || '')) {
-    throw Object.assign(new Error('Connect app installation URL is invalid'), { status: 400 });
-  }
-  return new URL('/api/platforms/commercetools/lifecycle', entry.origin).href;
+  return LIFECYCLE_URL;
 }
 
 export async function lifecycle(action, env = process.env, send = fetch, wait = ms => new Promise(resolve => setTimeout(resolve, ms))) {
