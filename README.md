@@ -42,7 +42,7 @@ To run the service and configuration tests from the repository root, use:
 
 ## Public installation status
 
-Public source visibility does not certify or list the app. Preview and production use the same deployment-verified destination discovery; no environment-specific source tag is required. Deploy the matching SaaS endpoint before releasing this service version. Verify the complete merchant installation before requesting marketplace certification. Custom Application registration remains a merchant organization prerequisite for the embedded interface.
+Public source visibility does not certify or list the app. Preview and production use the same deployment-verified grant. Local Preview tags bind the callback and wizard guidance to the local SaaS origin and cannot be listed. Deploy the matching SaaS endpoint before releasing this service version. Verify the complete merchant installation before requesting marketplace certification. Custom Application registration remains a merchant organization prerequisite for the embedded interface.
 
 ## Security reports
 
