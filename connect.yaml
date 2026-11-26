@@ -5,7 +5,7 @@ deployAs:
     configuration:
       standardConfiguration:
         - key: CUSTOM_APPLICATION_CONFIGURATION_URL
-          description: 'Application URL to copy: https://apps.chargebacks911.com/api/platforms/commercetools/marketplace — Merchant Center → Manage organizations & teams → your organization → Custom Applications → Configure Custom Applications → Add a Custom Application → Application URL. Save the application, then copy its configuration page URL from the browser address bar into this field.'
+          description: 'Application URL to copy: https://values-mortality-logistics-symbol.trycloudflare.com/api/platforms/commercetools/marketplace — Merchant Center → Manage organizations & teams → your organization → Custom Applications → Configure Custom Applications → Add a Custom Application → Application URL. Save the application, then copy its configuration page URL from the browser address bar into this field.'
           required: true
         - key: ENTRY_POINT_URI_PATH
           description: Custom Applications → Configure Custom Applications → your application → Application entry point URI path.
